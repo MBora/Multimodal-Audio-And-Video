@@ -54,7 +54,7 @@ class Conv3D(nn.Module):
     def __init__(self, num_classes=2):
         super(Conv3D, self).__init__()
         self.layer1_audio = nn.Sequential(
-            nn.Conv3d(in_channels=1, out_channels=32, kernel_size=(5,5,5), padding=2),
+            nn.Conv3d(in_channels=3, out_channels=32, kernel_size=(5,5,5), padding=2),
             nn.BatchNorm3d(32),
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=(2,2,2), stride=2),
@@ -68,18 +68,18 @@ class Conv3D(nn.Module):
             nn.MaxPool3d(kernel_size=(2,2,2), stride=2)
         )
         self.layer2 = nn.Sequential(
-            nn.Conv3d(in_channels=64, out_channels=128, kernel_size=(5,5,5), padding=2),
+            nn.Conv3d(in_channels=32, out_channels=128, kernel_size=(5,5,5), padding=2),
             nn.BatchNorm3d(128),
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=(2,2,2), stride=2),
             nn.MaxPool3d(kernel_size=(3,3,3), stride=3)
         )
-        self.fc = nn.Linear(5120, num_classes)
+        self.fc = nn.Linear(24576, num_classes)
     
     def forward(self, audio, video):
         out_audio = self.layer1_audio(audio)
         out_video = self.layer1_video(video)
-        out = torch.cat((out_audio, out_video), dim=1)
+        out = torch.cat((out_audio, out_video), dim=4)
         out = self.layer2(out)
         out = out.view(out.size(0), -1)
         out = self.fc(out)
@@ -102,7 +102,7 @@ for epoch in range(num_epochs):
         inputs_audio, labels_audio = data[0]
         inputs_video, labels_video = data[1]
         # input(f"Audio = {len(inputs_audio)}, Video = {len(inputs_video)}")
-        input(f"Audio = {inputs_audio.shape}, Video = {inputs_video.shape}")
+        # input(f"Audio = {inputs_audio.shape}, Video = {inputs_video.shape}")
 
         # Concatenate the feature maps from both modalities
         # inputs = torch.cat([inputs_audio, inputs_video], dim=4).to(device)
